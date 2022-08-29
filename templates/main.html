@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}DP Cerny - Stream{% endblock %}
+{% block script%}
+<script>
+    // width must be in .html file because of Jinja template render of variable imgSize, main.js will work
+    // with this width
+    let width = {{imgSize}};
+</script>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="contentDiv">
+        <div class="hidden">
+            <video id="video">Video stream not available.</video>
+        </div>
+
+
+            <canvas id="canvas">
+              <div class="output">
+                <img id="photo" alt="The screen capture will appear in this box.">
+              </div>
+            </canvas>
+
+        <button id="startbutton" class="btn btn-success">Start stream</button>
+        <div class="container text-center my-5">
+            <img id="result" class="hidden" src="{{url_for('static', filename='test.png')}}" alt="Result of neural network detecion.">
+        </div>
+    </div>
+
+    <div class="container text-center hidden contentDiv">
+        <table class="table">
+            <thead>
+                <th scope="col">#</th>
+                <th scope="col">Time</th>
+                <th scope="col">Image</th>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
