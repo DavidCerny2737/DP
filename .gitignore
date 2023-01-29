@@ -1,5 +1,6 @@
 venv/
 .idea/
+representants/
 
 *.pyc
 __pycache__/
@@ -18,3 +19,4 @@ mish-cuda/
 best.pt
 last.pt
 yolov4-csp.weights
+representants.txt

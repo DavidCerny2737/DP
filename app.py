@@ -31,7 +31,7 @@ def setup_model():
 
 @app.route("/")
 def root():
-    return redirect(url_for('main'))
+    return redirect(url_for('stream'))
 
 
 @app.route('/main')
