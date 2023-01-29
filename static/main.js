@@ -22,6 +22,11 @@
   var startbutton = null;
   let initalized = false;
 
+  socket.onmessage = (event) => {
+    validate(event.data);
+    takepicture();
+  }
+
   function showViewLiveResultButton() {
     if (window.self !== window.top) {
       // Ensure that if our document is in a frame, we get the user
@@ -154,13 +159,13 @@
       return new Blob([uInt8Array], { type: contentType });
   }
 
-  function validate(response){
+  function validate(data){
     console.log(`Execution time: ${Date.now() - startTime} ms`);
     if($('#result').hasClass('hidden')){
        $('#result').removeClass('hidden');
     }
-    $('#result').attr('src', 'data:' + response['content-type'] + ';base64,' + response['data']);
-    setTimeout(takepicture, 0);
+    $('#result').attr('src', 'data:image/png;base64,' + data);
+    //setTimeout(takepicture, 0);
   }
 
 
@@ -171,11 +176,12 @@
       canvas.height = height;
       context.drawImage(video, 0, 0, width, height);
 
-      var frame = makeBlob(canvas.toDataURL('image/png'));
+      var frame = canvas.toDataURL('image/png');
 
        startTime = Date.now();
-       $.ajax({method: 'POST', url: "main/frame", contentType: 'application/json', data : frame, processData: false})
-       .done(validate);
+       /*$.ajax({method: 'POST', url: "main/frame", contentType: 'application/json', data : frame, processData: false})
+       .done(validate);*/
+       socket.send(frame)
 
     } else {
       clearphoto();

@@ -2,9 +2,13 @@ from flask import Flask
 from flask import render_template, redirect, url_for, request, jsonify, send_from_directory
 from app import detect
 from app.utils.recognition import initialize_recognition, get_representants_table, LOG_IMAGES_DIR
+from flask_sock import Sock
+import base64
 
 
+sock = Sock()
 app = Flask(__name__)
+sock.init_app(app)
 stream_width = None
 stream_height = None
 model = None
@@ -56,6 +60,16 @@ def get_table():
 @app.route('/main/log/<filename>')
 def download_file(filename):
     return send_from_directory(LOG_IMAGES_DIR, filename)
+
+
+@sock.route('/detect')
+def detect_frame(ws):
+    while True:
+        # remove image/png base64; ... preamble from POST
+        data = ws.receive()[22:]
+        base64_bytes = base64.b64decode(data)
+        result_data = model.forward(base64_bytes)
+        ws.send(result_data)
 
 
 def default_props(active=NAV_STREAM):
