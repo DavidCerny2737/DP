@@ -60,8 +60,8 @@ class Model:
     @torch.inference_mode()
     def forward(self, base64_image, auto_size=32):
         t0 = time.time()
-        img = torch.zeros((1, 3, self.img_size, self.img_size), device=self.device)  # init img
-        _ = self.model(img.half() if self.half else img) if self.device.type != 'cpu' else None  # run once
+        #img = torch.zeros((1, 3, self.img_size, self.img_size), device=self.device)  # init img
+        #_ = self.model(img.half() if self.half else img) if self.device.type != 'cpu' else None  # run once
 
         im0s = np.frombuffer(base64_image, np.uint8)
         im0s = cv2.imdecode(im0s, cv2.IMREAD_COLOR)

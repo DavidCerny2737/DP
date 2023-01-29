@@ -6,6 +6,7 @@
   //var width = 640;    // We will scale the photo width to this
   var height = 0;     // This will be computed based on the input stream
   console.log(width);
+  let startTime;
 
   // |streaming| indicates whether or not we're currently streaming
   // video from the camera. Obviously, we start at false.
@@ -154,6 +155,7 @@
   }
 
   function validate(response){
+    console.log(`Execution time: ${Date.now() - startTime} ms`);
     if($('#result').hasClass('hidden')){
        $('#result').removeClass('hidden');
     }
@@ -171,6 +173,7 @@
 
       var frame = makeBlob(canvas.toDataURL('image/png'));
 
+       startTime = Date.now();
        $.ajax({method: 'POST', url: "main/frame", contentType: 'application/json', data : frame, processData: false})
        .done(validate);
 
