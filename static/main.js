@@ -7,6 +7,8 @@
   var height = 0;     // This will be computed based on the input stream
   console.log(width);
 
+  let startTime;
+
   // |streaming| indicates whether or not we're currently streaming
   // video from the camera. Obviously, we start at false.
 
@@ -14,6 +16,12 @@
 
   // The various HTML elements we need to configure or control. These
   // will be set by the startup() function.
+
+  io.on('update-picture', (socket) => {
+    validate(socket);
+    console.log(`Execution time: ${Date.now() - startTime} ms`);
+    takepicture();
+  });
 
   var video = null;
   var canvas = null;
@@ -157,8 +165,8 @@
     if($('#result').hasClass('hidden')){
        $('#result').removeClass('hidden');
     }
-    $('#result').attr('src', 'data:' + response['content-type'] + ';base64,' + response['data']);
-    setTimeout(takepicture, 0);
+    $('#result').attr('src', 'data:image/png;base64,' + response);
+    //setTimeout(takepicture, 0);
   }
 
 
@@ -169,10 +177,12 @@
       canvas.height = height;
       context.drawImage(video, 0, 0, width, height);
 
-      var frame = makeBlob(canvas.toDataURL('image/png'));
-
-       $.ajax({method: 'POST', url: "main/frame", contentType: 'application/json', data : frame, processData: false})
-       .done(validate);
+      canvas.toBlob((blob) => {
+        startTime = Date.now();
+        io.emit('frame', {blob});
+      });
+       /*$.ajax({method: 'POST', url: "main/frame", contentType: 'application/json', data : frame, processData: false})
+       .done(validate);*/
 
     } else {
       clearphoto();

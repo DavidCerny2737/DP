@@ -1,18 +1,13 @@
 import base64
-from threading import Thread
-
-import numpy as np
 from numpy import random
 
-from app.utils.plots import plot_one_box
-from app.utils.torch_utils import select_device, time_synchronized
+from utils.plots import plot_one_box
+from utils.torch_utils import select_device, time_synchronized
 
-import torch
-
-from app.models.models import *
-from app.utils.datasets import *
-from app.utils.general import *
-from app.utils.recognition import remove_old_representants, check_face
+from models.models import *
+from utils.datasets import *
+from utils.general import *
+from utils.recognition import remove_old_representants, check_face
 
 
 def provide_default_config():
@@ -59,9 +54,9 @@ class Model:
 
     @torch.inference_mode()
     def forward(self, base64_image, auto_size=32):
-        t0 = time.time()
-        img = torch.zeros((1, 3, self.img_size, self.img_size), device=self.device)  # init img
-        _ = self.model(img.half() if self.half else img) if self.device.type != 'cpu' else None  # run once
+        #t0 = time.time()
+        #img = torch.zeros((1, 3, self.img_size, self.img_size), device=self.device)  # init img
+        #_ = self.model(img.half() if self.half else img) if self.device.type != 'cpu' else None  # run once
 
         im0s = np.frombuffer(base64_image, np.uint8)
         im0s = cv2.imdecode(im0s, cv2.IMREAD_COLOR)
@@ -78,14 +73,17 @@ class Model:
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
 
+        #print('Done input process. (%.3fs)' % (time.time() - t0))
+
         # Inference
-        t1 = time_synchronized()
+        #t1 = time_synchronized()
         pred = self.model(img, augment=self.augment)[0]
 
         # Apply NMS
         pred = non_max_suppression(pred, self.conf_thres, self.iou_thres, classes=self.classes,
                                            agnostic=self.agnostic_nms)
-        t2 = time_synchronized()
+        #print('Done YOLO + NMS. (%.3fs)' % (time.time() - t1))
+        #t2 = time_synchronized()
 
         # Apply Classifier
         #if classify:
@@ -128,8 +126,7 @@ class Model:
                     plot_one_box(xyxy, im0, label=label, color=self.colors[int(cls)], line_thickness=3)
 
         # Print time (inference + NMS)
-        print('%sDone inference. (%.3fs)' % (s, t2 - t1))
-        print('Done full. (%.3fs)' % (time.time() - t0))
+        #print('%sDone recognition. (%.3fs)' % (s, t2 - t1))
         _, image = cv2.imencode('.png', im0)
         return base64.b64encode(image).decode()
 

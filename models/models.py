@@ -1,7 +1,7 @@
-from app.utils.google_utils import *
-from app.utils.layers import *
-from app.utils.parse_config import *
-from app.utils import torch_utils
+from utils.google_utils import *
+from utils.layers import *
+from utils.parse_config import *
+from utils import torch_utils
 
 ONNX_EXPORT = False
 
