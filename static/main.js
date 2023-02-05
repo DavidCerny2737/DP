@@ -3,9 +3,10 @@
   // width to the value defined here, but the height will be
   // calculated based on the aspect ratio of the input stream.
 
-  //var width = 640;    // We will scale the photo width to this
-  var height = 0;     // This will be computed based on the input stream
+  var width = 416;    // We will scale the photo width to this
+  var height = 416;     // This will be computed based on the input stream
   console.log(width);
+  let startTime;
 
   let startTime;
 
@@ -162,6 +163,7 @@
   }
 
   function validate(response){
+    console.log(`Execution time: ${Date.now() - startTime} ms`);
     if($('#result').hasClass('hidden')){
        $('#result').removeClass('hidden');
     }

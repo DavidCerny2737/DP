@@ -2,6 +2,7 @@ venv/
 .idea/
 representants/
 list/
+images/
 
 *.pyc
 __pycache__/
@@ -21,3 +22,4 @@ best.pt
 last.pt
 yolov4-csp.weights
 representants.txt
+YOLOv4-CSP.onnx
