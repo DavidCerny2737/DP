@@ -35,3 +35,6 @@ typing_extensions==4.1.1
 urllib3==1.26.9
 Werkzeug==2.0.3
 flask-sock
+psutil
+onnx
+onnxruntime-gpu
