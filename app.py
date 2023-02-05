@@ -15,7 +15,7 @@ model = None
 
 NAV_LOG = 'LOG'
 NAV_STREAM = 'STREAM'
-IMG_SIZE = 640
+IMG_SIZE = (416, 416)
 IMG_SIZE_KEY = 'imgSize'
 
 
@@ -24,6 +24,7 @@ def setup_model():
     global model
     config = detect.provide_default_config()
     config['img-size'] = IMG_SIZE
+    #config['onnx'] = False
     print('Image size is ' + str(config['img-size']))
     print('Starting to initialize model')
     model = detect.Model(config)
