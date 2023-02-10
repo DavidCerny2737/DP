@@ -3,8 +3,13 @@ from flask import render_template, redirect, url_for, request, jsonify, send_fro
 import detect
 from utils.recognition import initialize_recognition, get_representants_table, LOG_IMAGES_DIR
 
+from flask_wtf.csrf import CSRFProtect
+import secrets
+import json
 
 app = Flask(__name__)
+app.secret_key = secrets.token_urlsafe(16)
+csrf = CSRFProtect(app)
 stream_width = None
 stream_height = None
 model = None
@@ -15,22 +20,24 @@ IMG_SIZE = (416, 416)
 IMG_SIZE_KEY = 'imgSize'
 
 
-@app.before_first_request
-def setup_model():
+@app.route('/main/config', methods=['POST'])
+def config():
     global model
-    config = detect.provide_default_config()
-    config['img-size'] = IMG_SIZE
-    #config['onnx'] = False
-    print('Image size is ' + str(config['img-size']))
-    print('Starting to initialize model')
-    model = detect.Model(config)
-    print('Model initialzied and ready')
-    print('Initializing face recognition module')
-    initialize_recognition()
-    print('Face recognition module initialized')
+    if model is None:
+        config = detect.provide_default_config()
+        config['img-size'] = request.json['width']
+        config['onnx'] = False
+        print('Image size is ' + str(config['img-size']))
+        print('Starting to initialize model')
+        model = detect.Model(config)
+        print('Model initialzied and ready')
+        print('Initializing face recognition module')
+        initialize_recognition()
+        print('Face recognition module initialized')
+    return json.dumps({'data': ''}), 200, {'ContentType': 'application/json'}
 
 
-@app.route("/")
+@app.route('/')
 def root():
     return redirect(url_for('stream'))
 
@@ -60,7 +67,7 @@ def download_file(filename):
 
 
 def default_props(active=NAV_STREAM):
-    return {"active": active, IMG_SIZE_KEY: IMG_SIZE}
+    return {'active': active, IMG_SIZE_KEY: IMG_SIZE}
 
 
 if __name__ == '__main__':

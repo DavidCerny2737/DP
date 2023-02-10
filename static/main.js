@@ -3,8 +3,17 @@
   // width to the value defined here, but the height will be
   // calculated based on the aspect ratio of the input stream.
 
-  var width = 416;    // We will scale the photo width to this
-  var height = 416;     // This will be computed based on the input stream
+  var csrftoken = $('meta[name=csrf-token]').attr('content');
+
+   $.ajaxSetup({
+       beforeSend: function(xhr, settings) {
+           if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+               xhr.setRequestHeader("X-CSRFToken", csrftoken);
+           }
+       }
+   });
+
+  var width = 480;    // We will scale the photo width to this (note that only 160px steps are valid for yolov4-CSP - 640, 480, 320, ...)
   console.log(width);
   let startTime;
 
@@ -27,9 +36,9 @@
       // Ensure that if our document is in a frame, we get the user
       // to first open it in its own tab or window. Otherwise, it
       // won't be able to request permission for camera access.
-      document.querySelector(".contentarea").remove();
-      const button = document.createElement("button");
-      button.textContent = "View live result of the example code above";
+      document.querySelector('.contentarea').remove();
+      const button = document.createElement('button');
+      button.textContent = 'View live result of the example code above';
       document.body.append(button);
       button.addEventListener('click', () => window.open(location.href));
       return true;
@@ -50,7 +59,7 @@
       video.play();
     })
     .catch(function(err) {
-      console.log("An error occurred: " + err);
+      console.log('An error occurred: ' + err);
     });
 
     video.addEventListener('canplay', function(ev){
@@ -63,6 +72,17 @@
         if (isNaN(height)) {
           height = width / (4/3);
         }
+
+        $.ajax({method: 'POST', url: 'main/config', contentType: 'application/json',
+            data: JSON.stringify({'height': height, 'width': width}),
+            success: function (response) {
+                $('#start-message').hide();
+                $('#startbutton').removeClass('hidden');
+            },
+                failure: function (response) {
+                alert("failure")
+            }
+        });
 
         video.setAttribute('width', width);
         video.setAttribute('height', height);
@@ -79,7 +99,7 @@
     }, false);
     clearphoto();
 
-    $("#streamNav").on("click", function(){
+    $('#streamNav').on('click', function(){
         if(!$(this).hasClass('active')){
             $(this).toggleClass('active');
             $('#logNav').toggleClass('active');
@@ -89,8 +109,8 @@
     });
 
     $(document).ready(function(){
-        $("#logNav").on("click", function(){
-            $.ajax({method: 'POST', url: "main/table", contentType: 'application/json'})
+        $('#logNav').on('click', function(){
+            $.ajax({method: 'POST', url: 'main/table', contentType: 'application/json'})
                 .done(function(msg){
                     $('.table tbody').empty();
                     var time, fileName, content;
@@ -119,7 +139,7 @@
 
   function clearphoto() {
     var context = canvas.getContext('2d');
-    context.fillStyle = "#AAA";
+    context.fillStyle = '#AAA';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     var data = canvas.toDataURL('image/png');
@@ -169,12 +189,14 @@
     if (width && height) {
       canvas.width = width;
       canvas.height = height;
+      console.log(width);
+      console.log(height);
       context.drawImage(video, 0, 0, width, height);
 
       var frame = makeBlob(canvas.toDataURL('image/png'));
 
        startTime = Date.now();
-       $.ajax({method: 'POST', url: "main/frame", contentType: 'application/json', data : frame, processData: false})
+       $.ajax({method: 'POST', url: 'main/frame', contentType: 'application/json', data : frame, processData: false})
        .done(validate);
 
     } else {

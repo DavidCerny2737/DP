@@ -1,10 +1,8 @@
 import detect
 
-import torch.nn as nn
 import torch
 import onnx
 import onnxruntime
-import numpy as np
 
 
 IMAGE_SIZE = (320, 416)

@@ -12,7 +12,7 @@ from export_onnx import MODEL_NAME
 from models.models import *
 from utils.datasets import *
 from utils.general import *
-from utils.recognition import remove_old_representants, check_face
+from utils.recognition import check_face
 
 
 def provide_default_config():
