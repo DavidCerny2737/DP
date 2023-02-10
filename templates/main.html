@@ -23,7 +23,10 @@
               </div>
             </canvas>
 
-        <button id="startbutton" class="btn btn-success">Start stream</button>
+        <div id="start-message">
+            <p class="text-primary">Prosím vyčkejte na inicializaci modelu.</p>
+        </div>
+        <button id="startbutton" class="btn btn-success hidden">Start stream</button>
         <div class="container text-center my-5">
             <img id="result" class="hidden" src="{{url_for('static', filename='test.png')}}" alt="Result of neural network detecion.">
         </div>
