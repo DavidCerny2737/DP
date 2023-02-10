@@ -15,12 +15,6 @@ from utils.general import *
 from utils.recognition import check_face
 
 
-def provide_default_config():
-    return {'weights': ['best.pt'], 'img-size': 640, 'conf-thres': 0.4, 'iou-thres': 0.6, 'device': '0', 'view-img': True,
-            'save-txt': False, 'agnostic-nms': True, 'augment': False, 'update': False, 'cfg': 'models/yolov4-csp.cfg',
-            'names': 'data/coco.names', 'save-img': False, 'classes': None, 'onnx': True}
-
-
 class Model:
 
     def __init__(self, config):
@@ -46,7 +40,8 @@ class Model:
             sess_options.intra_op_num_threads = psutil.cpu_count(logical=True)
             self.model = onnxruntime.InferenceSession(MODEL_NAME, sess_options, providers=['CUDAExecutionProvider'])
         else:
-            self.model = Darknet(self.cfg, self.img_size).cuda()
+            self.model = Darknet(self.cfg, self.img_size).to(self.device)
+
         self.safe_path = 'test-network.png'
 
         # Load model

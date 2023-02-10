@@ -174,6 +174,10 @@ def load_encodings():
 def get_representants_table():
     try:
         representants_file_mutex.acquire()
+        if not os.path.exists(REPRESENTANTS_FILE):
+            f = open(REPRESENTANTS_FILE, 'w')
+            f.close()
+
         with open(REPRESENTANTS_FILE, 'r') as f:
             lines = f.readlines()
     finally:

@@ -20,16 +20,22 @@ IMG_SIZE = (416, 416)
 IMG_SIZE_KEY = 'imgSize'
 
 
+# for GPU run use device: '0'
+# for optimized onnx run on GPU use onnx: True, but first export model using export_onnx.py with proper IMAGE_SIZE constant
+CONFIG = {'weights': ['best.pt'], 'img-size': 640, 'conf-thres': 0.4, 'iou-thres': 0.6, 'device': 'cpu', 'view-img': True,
+            'save-txt': False, 'agnostic-nms': True, 'augment': False, 'update': False, 'cfg': 'models/yolov4-csp.cfg',
+            'names': 'data/coco.names', 'save-img': False, 'classes': None, 'onnx': False}
+
+
+
 @app.route('/main/config', methods=['POST'])
 def config():
     global model
     if model is None:
-        config = detect.provide_default_config()
-        config['img-size'] = request.json['width']
-        config['onnx'] = False
-        print('Image size is ' + str(config['img-size']))
+        CONFIG['img-size'] = request.json['width']
+        print('Image size is ' + str(CONFIG['img-size']))
         print('Starting to initialize model')
-        model = detect.Model(config)
+        model = detect.Model(CONFIG)
         print('Model initialzied and ready')
         print('Initializing face recognition module')
         initialize_recognition()
