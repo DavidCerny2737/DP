@@ -99,3 +99,14 @@ potřeba chvíli vyčkat než se model inicializuje. Poté kliknutím na tlačí
 V menu aplikace po kliknutí na Log je možno pozorovat individuální osoby co byly ve streamu nalezeny bez masky. 
 Tyto by měli obsahovat co nejméně duplicitních lidí, neboť jednotlivé obličeje jsou vůči sobě porobvnávány 
 rozpoznáváním obličejů.
+
+# Ostatní větve
+
+## feature/socketio
+Tato větev obsahuje implementaci přenosu obrázků z klienta na server pomocí socketio jako pokus o optimalizaci procesu. 
+Bohužel tento přenos je výrazně pomalejší než AJAX requesty.
+
+## feature/webSocket
+Tato větev implementuje technologii web socket pro přenos obrázků z klienta na server jako pokus o optimalizaci procesu.
+Nativní js web-scoket a flask-sock je sice znatelně rychlejší než socketio, ale i tak na rychlost AJAX requestů 
+nedosahuje.
