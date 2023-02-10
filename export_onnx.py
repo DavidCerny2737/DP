@@ -1,4 +1,4 @@
-import app.detect
+import detect
 
 import torch.nn as nn
 import torch

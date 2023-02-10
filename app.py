@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import render_template, redirect, url_for, request, jsonify, send_from_directory
-from app import detect
-from app.utils.recognition import initialize_recognition, get_representants_table, LOG_IMAGES_DIR
+import detect
+from utils.recognition import initialize_recognition, get_representants_table, LOG_IMAGES_DIR
 
 
 app = Flask(__name__)
@@ -63,3 +63,5 @@ def default_props(active=NAV_STREAM):
     return {"active": active, IMG_SIZE_KEY: IMG_SIZE}
 
 
+if __name__ == '__main__':
+    app.run()
