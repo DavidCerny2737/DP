@@ -1,13 +1,11 @@
-import app.detect
+import detect
 
-import torch.nn as nn
 import torch
 import onnx
 import onnxruntime
-import numpy as np
 
 
-IMAGE_SIZE = (320, 416)
+IMAGE_SIZE = (384, 480)
 MODEL_NAME = 'C:\\DP\\app\\YOLOv4-CSP.onnx'
 
 
@@ -44,4 +42,3 @@ if __name__ == '__main__':
 
     # compare ONNX Runtime and PyTorch results
     # np.testing.assert_allclose(to_numpy(output[0]), ort_outs[0], rtol=1e-03, atol=1e-05)
-    print('vsechno cajk')

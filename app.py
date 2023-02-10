@@ -6,8 +6,13 @@ from utils.recognition import initialize_recognition, get_representants_table, L
 from utils.general import *
 import PIL
 
+from flask_wtf.csrf import CSRFProtect
+import secrets
+import json
 
 app = Flask(__name__)
+app.secret_key = secrets.token_urlsafe(16)
+csrf = CSRFProtect(app)
 socketio = SocketIO(app)
 stream_width = None
 stream_height = None
@@ -19,22 +24,30 @@ IMG_SIZE = (416, 416)
 IMG_SIZE_KEY = 'imgSize'
 
 
-@app.before_first_request
-def setup_app():
+# for GPU run use device: '0'
+# for optimized onnx run on GPU use onnx: True, but first export model using export_onnx.py with proper IMAGE_SIZE constant
+CONFIG = {'weights': ['best.pt'], 'img-size': 640, 'conf-thres': 0.4, 'iou-thres': 0.6, 'device': 'cpu', 'view-img': True,
+            'save-txt': False, 'agnostic-nms': True, 'augment': False, 'update': False, 'cfg': 'models/yolov4-csp.cfg',
+            'names': 'data/coco.names', 'save-img': False, 'classes': None, 'onnx': False}
+
+
+
+@app.route('/main/config', methods=['POST'])
+def config():
     global model
-    config = detect.provide_default_config()
-    config['img-size'] = IMG_SIZE
-    #config['onnx'] = False
-    print('Image size is ' + str(config['img-size']))
-    print('Starting to initialize model')
-    model = detect.Model(config)
-    print('Model initialzied and ready')
-    print('Initializing face recognition module')
-    initialize_recognition()
-    print('Face recognition module initialized')
+    if model is None:
+        CONFIG['img-size'] = request.json['width']
+        print('Image size is ' + str(CONFIG['img-size']))
+        print('Starting to initialize model')
+        model = detect.Model(CONFIG)
+        print('Model initialzied and ready')
+        print('Initializing face recognition module')
+        initialize_recognition()
+        print('Face recognition module initialized')
+    return json.dumps({'data': ''}), 200, {'ContentType': 'application/json'}
 
 
-@app.route("/")
+@app.route('/')
 def root():
     return redirect(url_for('stream'))
 
@@ -65,7 +78,7 @@ def hangle_socket_message(data):
 
 
 def default_props(active=NAV_STREAM):
-    return {"active": active, IMG_SIZE_KEY: IMG_SIZE}
+    return {'active': active, IMG_SIZE_KEY: IMG_SIZE}
 
 
 def collect_env_info():
@@ -79,5 +92,4 @@ def collect_env_info():
 
 
 if __name__ == '__main__':
-    #print(collect_env_info())
     socketio.run(app)
