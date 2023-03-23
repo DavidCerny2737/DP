@@ -13,6 +13,7 @@ from models.models import *
 from utils.datasets import *
 from utils.general import *
 from utils.recognition import check_face
+from detectionResult import DetectionResult
 
 
 class Model:
@@ -63,6 +64,7 @@ class Model:
     @torch.inference_mode()
     def forward(self, base64_image, auto_size=32):
         t0 = time.time()
+        result = []
 
         im0s = np.frombuffer(base64_image, np.uint8)
         im0s = cv2.imdecode(im0s, cv2.IMREAD_COLOR)
@@ -111,7 +113,7 @@ class Model:
         s += '%gx%g ' % img.shape[2:]  # print string
         gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
         if det is not None and len(det):
-             # Rescale boxes from img_size to im0 size
+            # Rescale boxes from img_size to im0 size
             det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
             # Print results
@@ -121,30 +123,32 @@ class Model:
 
             # Write results
             for *xyxy, conf, cls in det:
+                c1, c2 = (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3]))
+                result.append(DetectionResult(c1[0], c1[1], c2[0] - c1[0], c2[1] - c1[1], conf, cls))
+
                 if self.save_txt:  # Write to file
                     xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(
                         -1).tolist()  # normalized xywh
                     with open(txt_path + '.txt', 'a') as f:
                         f.write(('%g ' * 5 + '\n') % (cls, *xywh))  # label format
 
-                if self.view_img:  # Add bbox to image
-                    if int(cls) == 1:
-                        print('Unmask detected!')
-                        c1, c2 = (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3]))
-                        face = im0[c1[1]:c2[1], c1[0]:c2[0]]
-                        # check_face(face, im0)
+                if int(cls) == 1:
+                    print('Unmask detected!')
 
-                        t = Thread(target=check_face, args=(face, im0))
-                        t.start()
+                    print(c1, c2)
+                    face = im0[c1[1]:c2[1], c1[0]:c2[0]]
+                    # check_face(face, im0)
 
-                    label = '%s %.2f' % (self.names[int(cls)], conf)
-                    plot_one_box(xyxy, im0, label=label, color=self.colors[int(cls)], line_thickness=3)
+                    t = Thread(target=check_face, args=(face, im0))
+                    t.start()
 
-        # Print time (inference + NMS)
+            # Print time (inference + NMS)
+        print('Image shape')
+        print(img.shape)
         print('%sDone inference. (%.3fs)' % (s, t2 - t1))
         print('Done full. (%.3fs)' % (time.time() - t0))
-        _, image = cv2.imencode('.png', im0)
-        return base64.b64encode(image).decode()
+        # _, image = cv2.imencode('.png', im0)
+        return result
 
 
 def load_classes(path):

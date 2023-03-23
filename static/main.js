@@ -13,9 +13,17 @@
        }
    });
 
-  var width = 480;    // We will scale the photo width to this (note that only 160px steps are valid for yolov4-CSP - 640, 480, 320, ...)
-  console.log(width);
+  var width = 640;    // We will scale the photo width to this (note that only 160px steps are valid for yolov4-CSP - 640, 480, 320, ...)
+  var widthDifference = 160;
+  var widthDifferenceHalf = widthDifference/2;
+  var scaledHeight;
   let startTime;
+  let image;
+  let colorConfig = {'0': 'green', '1': 'red', '2': 'orange'};
+  let nameConfing = {'0': 'Masked face', '1': 'Unmasked face', '2': 'Incorrect mask'};
+  let lineWidth = 4;
+  let textPaddingVertical = 4;
+  let detectionResult = null;
 
   // |streaming| indicates whether or not we're currently streaming
   // video from the camera. Obviously, we start at false.
@@ -27,6 +35,7 @@
 
   var video = null;
   var canvas = null;
+  var secondCanvas = null;
   var photo = null;
   var startbutton = null;
   let initalized = false;
@@ -50,6 +59,7 @@
     if (showViewLiveResultButton()) { return; }
     video = document.getElementById('video');
     canvas = document.getElementById('canvas');
+    secondCanvas = document.getElementById('secondCanvas');
     photo = document.getElementById('photo');
     startbutton = document.getElementById('startbutton');
 
@@ -65,6 +75,7 @@
     video.addEventListener('canplay', function(ev){
       if (!streaming) {
         height = video.videoHeight / (video.videoWidth/width);
+        scaledHeight = video.videoHeight / (video.videoWidth/(width - widthDifference));
 
         // Firefox currently has a bug where the height can't be read from
         // the video, so we will make assumptions if this happens.
@@ -73,8 +84,12 @@
           height = width / (4/3);
         }
 
+        if (isNaN(scaledHeight)) {
+          scaledHeight = (width - widthDifference) / (4/3);
+        }
+
         $.ajax({method: 'POST', url: 'main/config', contentType: 'application/json',
-            data: JSON.stringify({'height': height, 'width': width}),
+            data: JSON.stringify({'height': scaledHeight, 'width': width - widthDifference}),
             success: function (response) {
                 $('#start-message').hide();
                 $('#startbutton').removeClass('hidden');
@@ -176,32 +191,83 @@
 
   function validate(response){
     console.log(`Execution time: ${Date.now() - startTime} ms`);
+    setTimeout(takepicture, 0);
     if($('#result').hasClass('hidden')){
        $('#result').removeClass('hidden');
     }
-    $('#result').attr('src', 'data:' + response['content-type'] + ';base64,' + response['data']);
-    setTimeout(takepicture, 0);
+    //response = $.parseJSON(response)
+    detectionResult = $.parseJSON(response);
+    /*if(response.length > 0){
+        drawDetectionResult(response);
+    }
+
+    $('#result').attr('src', canvas.toDataURL('image/jpeg'));*/
   }
 
 
   function takepicture() {
     var context = canvas.getContext('2d');
+    var secondContext = secondCanvas.getContext('2d');
     if (width && height) {
       canvas.width = width;
       canvas.height = height;
-      console.log(width);
-      console.log(height);
+      console.log(width - widthDifference);
+      console.log(scaledHeight);
+      secondCanvas.width = width - widthDifference;
+      secondCanvas.height = scaledHeight;
+
+      if($('#canvas-container').hasClass('hidden')){
+        $('#canvas-container').removeClass('hidden');
+      }
+
       context.drawImage(video, 0, 0, width, height);
+      drawDetectionResult(detectionResult);
+      secondContext.drawImage(canvas, 0, 0, width - widthDifference, scaledHeight);
 
-      var frame = makeBlob(canvas.toDataURL('image/png'));
-
-       startTime = Date.now();
+      image = secondCanvas.toDataURL('image/jpeg');
+      //$('#result').attr('src', canvas.toDataURL('image/jpeg'));
+      //$('#result2').attr('src', secondCanvas.toDataURL('image/jpeg'));
+      var frame = makeBlob(image);
+      startTime = Date.now();
        $.ajax({method: 'POST', url: 'main/frame', contentType: 'application/json', data : frame, processData: false})
        .done(validate);
-
     } else {
       clearphoto();
     }
+  }
+
+  function drawDetectionResult(detectionDataArray){
+    if(detectionDataArray != null && detectionDataArray.length > 0){
+        var context = canvas.getContext('2d');
+        context.font = '20px Arial';
+        context.beginPath();
+        detectionDataArray.forEach(detectionData => {
+            detectionData = $.parseJSON(detectionData);
+            var positionData = detectionData['position'];
+            context.lineWidth = lineWidth;
+            context.strokeStyle = colorConfig[detectionData['class']];
+
+            var origWidth = (Number(positionData['width']) / (width - widthDifference)) * width;
+            var origHeight = (Number(positionData['height']) / scaledHeight) * height;
+            var origX = (Number(positionData['x']) / (width - widthDifference)) * width;
+            var origY = (Number(positionData['y']) / scaledHeight) * height;
+
+            context.rect(origX, origY, origWidth, origHeight);
+
+            var name = nameConfing[detectionData['class']] + ': ' + parseFloat(detectionData['confidence']).toFixed(2);
+            context.fillStyle = colorConfig[detectionData['class']];
+            context.fillText(name, origX, origY - textPaddingVertical);
+        });
+        context.stroke();
+    }
+  }
+
+  function scalePositionToOriginalWidth(position){
+    return (Number(position) / (width - widthDifference)) * width;
+  }
+
+  function scalePositionToOriginalHeight(position){
+    return (Number(position) / scaledHeight) * height;
   }
 
   // Set up our event listener to run the startup process
