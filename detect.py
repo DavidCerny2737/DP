@@ -26,6 +26,10 @@ class Model:
         self.save_txt = config['save-txt']
         self.img_size = config['img-size']
         self.save_img = config['save-img']
+        if self.save_img:
+            if not os.path.isdir('inference_app'):
+                os.mkdir('inference_app')
+
         self.conf_thres = config['conf-thres']
         self.iou_thres = config['iou-thres']
         self.device = select_device(config['device'])
@@ -35,6 +39,7 @@ class Model:
         self.update = config['update']
         self.cfg = config['cfg']
         self.half = self.device.type != 'cpu'
+        self.i = 0
         if self.onnx:
             assert 'CUDAExecutionProvider' in onnxruntime.get_available_providers()
             sess_options = onnxruntime.SessionOptions()
@@ -132,7 +137,7 @@ class Model:
                     with open(txt_path + '.txt', 'a') as f:
                         f.write(('%g ' * 5 + '\n') % (cls, *xywh))  # label format
 
-                if int(cls) == 1:
+                if int(cls) == 1 or int(cls) == 2:
                     print('Unmask detected!')
 
                     print(c1, c2)
@@ -141,6 +146,9 @@ class Model:
 
                     t = Thread(target=check_face, args=(face, im0))
                     t.start()
+                if self.save_img:
+                    cv2.imwrite(os.path.join('inference_app', str(self.i) + '.jpeg'), im0)
+                    self.i = self.i + 1
 
             # Print time (inference + NMS)
         print('Image shape')

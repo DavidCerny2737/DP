@@ -13,8 +13,8 @@
        }
    });
 
-  var width = 640;    // We will scale the photo width to this (note that only 160px steps are valid for yolov4-CSP - 640, 480, 320, ...)
-  var widthDifference = 160;
+  var width = 1024;    // We will scale the photo width to this (note that only 160px steps are valid for yolov4-CSP - 640, 480, 320, ...)
+  var widthDifference = 512;
   var widthDifferenceHalf = widthDifference/2;
   var scaledHeight;
   var startTime;
@@ -24,7 +24,7 @@
   var lineWidth = 4;
   var textPaddingVertical = 4;
   var detectionResult = null;
-  var maxAverageWindowSize = 50;
+  var maxAverageWindowSize = 20;
   var speedResults = [];
   var averageSpeed = 0;
 
@@ -160,7 +160,7 @@
     context.fillStyle = '#AAA';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    var data = canvas.toDataURL('image/png');
+    var data = canvas.toDataURL('image/jpeg');
     photo.setAttribute('src', data);
   }
 
@@ -202,13 +202,6 @@
     if($('#result').hasClass('hidden')){
        $('#result').removeClass('hidden');
     }
-    //response = $.parseJSON(response)
-
-    /*if(response.length > 0){
-        drawDetectionResult(response);
-    }
-
-    $('#result').attr('src', canvas.toDataURL('image/jpeg'));*/
   }
 
   function takepicture() {
@@ -229,8 +222,6 @@
       secondContext.drawImage(canvas, 0, 0, width - widthDifference, scaledHeight);
 
       image = secondCanvas.toDataURL('image/jpeg');
-      //$('#result').attr('src', canvas.toDataURL('image/jpeg'));
-      //$('#result2').attr('src', secondCanvas.toDataURL('image/jpeg'));
       var frame = makeBlob(image);
       startTime = Date.now();
        $.ajax({method: 'POST', url: 'main/frame', contentType: 'application/json', data : frame, processData: false})
@@ -244,12 +235,14 @@
     if(detectionDataArray != null && detectionDataArray.length > 0){
         var context = canvas.getContext('2d');
         context.font = '20px Arial';
-        context.beginPath();
         detectionDataArray.forEach(detectionData => {
+            context.beginPath();
             detectionData = $.parseJSON(detectionData);
             var positionData = detectionData['position'];
+            var classIndex = detectionData['class'];
             context.lineWidth = lineWidth;
-            context.strokeStyle = colorConfig[detectionData['class']];
+            context.strokeStyle = colorConfig[classIndex];
+            context.fillStyle = colorConfig[classIndex];
 
             var origWidth = (Number(positionData['width']) / (width - widthDifference)) * width;
             var origHeight = (Number(positionData['height']) / scaledHeight) * height;
@@ -258,11 +251,10 @@
 
             context.rect(origX, origY, origWidth, origHeight);
 
-            var name = nameConfing[detectionData['class']] + ': ' + parseFloat(detectionData['confidence']).toFixed(2);
-            context.fillStyle = colorConfig[detectionData['class']];
+            var name = nameConfing[classIndex] + ': ' + parseFloat(detectionData['confidence']).toFixed(2);
             context.fillText(name, origX, origY - textPaddingVertical);
+            context.stroke();
         });
-        context.stroke();
     }
   }
 
