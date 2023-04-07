@@ -203,7 +203,6 @@
     averageSpeed = countAverageSpeed(speedResults);
     console.log(`Average speed: ${averageSpeed} ms`);
     detectionResult = $.parseJSON(response);
-    setTimeout(takepicture, 0);
     if($('#result').hasClass('hidden')){
        $('#result').removeClass('hidden');
     }
@@ -227,7 +226,7 @@
       drawDetectionResult(detectionResult);
       secondContext.drawImage(canvas, 0, 0, width - widthDifference, scaledHeight);
 
-      var frame = canvas.toDataURL('image/png');
+      var frame = secondCanvas.toDataURL('image/png');
 
        startTime = Date.now();
        socket.send(frame)

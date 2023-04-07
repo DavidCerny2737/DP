@@ -58,14 +58,6 @@ def stream():
     return render_template('main.html', table=[table], **default_props())
 
 
-@app.route('/main/frame', methods=['POST'])
-def frame():
-    base64_img = request.data
-    result = model.forward(base64_img)
-    result = [res.to_json() for res in result]
-    return Response(json.dumps(result), 'application/json')
-
-
 @app.route('/main/table', methods=['POST'])
 def get_table():
     table = get_representants_table()
@@ -84,7 +76,8 @@ def detect_frame(ws):
         data = ws.receive()[22:]
         base64_bytes = base64.b64decode(data)
         result_data = model.forward(base64_bytes)
-        ws.send(result_data)
+        result = [res.to_json() for res in result_data]
+        ws.send(json.dumps(result))
 
 
 def default_props(active=NAV_STREAM):
