@@ -115,8 +115,10 @@ def remove_old_representants():
         representants_file_mutex.release()
     # delete png and in memory embeddings
     for image_name in image_names:
-        os.remove(os.path.join(LOG_IMAGES_DIR, image_name))
-        os.remove(os.path.join(REPRESENTANTS_DIR, image_name))
+        if os.path.isfile(os.path.join(LOG_IMAGES_DIR, image_name)):
+            os.remove(os.path.join(LOG_IMAGES_DIR, image_name))
+        if os.path.isfile(os.path.join(REPRESENTANTS_DIR, image_name)):
+            os.remove(os.path.join(REPRESENTANTS_DIR, image_name))
 
     try:
         encoding_mutex.acquire()

@@ -1,4 +1,5 @@
 import detect
+import app
 
 import torch
 import onnx
@@ -14,7 +15,7 @@ def to_numpy(tensor):
 
 
 if __name__ == '__main__':
-    config = detect.provide_default_config()
+    config = app.CONFIG
     config['onnx'] = False
     config['img-size'] = IMAGE_SIZE
     model = detect.Model(config)
