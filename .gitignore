@@ -3,6 +3,7 @@ venv/
 representants/
 list/
 images/
+inference/
 
 *.pyc
 __pycache__/

@@ -22,7 +22,7 @@ IMG_SIZE_KEY = 'imgSize'
 
 # for GPU run use device: '0'
 # for optimized onnx run on GPU use onnx: True, but first export model using export_onnx.py with proper IMAGE_SIZE constant
-CONFIG = {'weights': ['old_weights/last.pt'], 'img-size': 640, 'conf-thres': 0.4, 'iou-thres': 0.6, 'device': '0', 'view-img': True,
+CONFIG = {'weights': ['old_weights/best.pt'], 'img-size': 640, 'conf-thres': 0.4, 'iou-thres': 0.6, 'device': '0', 'view-img': True,
             'save-txt': False, 'agnostic-nms': True, 'augment': False, 'update': False, 'cfg': 'models/yolov4-csp.cfg',
             'names': 'data/coco.names', 'save-img': False, 'classes': None, 'onnx': False}
 

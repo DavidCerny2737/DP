@@ -17,13 +17,16 @@
   var widthDifference = 160;
   var widthDifferenceHalf = widthDifference/2;
   var scaledHeight;
-  let startTime;
-  let image;
-  let colorConfig = {'0': 'green', '1': 'red', '2': 'orange'};
-  let nameConfing = {'0': 'Masked face', '1': 'Unmasked face', '2': 'Incorrect mask'};
-  let lineWidth = 4;
-  let textPaddingVertical = 4;
-  let detectionResult = null;
+  var startTime;
+  var image;
+  var colorConfig = {'0': 'green', '1': 'red', '2': 'orange'};
+  var nameConfing = {'0': 'Masked face', '1': 'Unmasked face', '2': 'Incorrect mask'};
+  var lineWidth = 4;
+  var textPaddingVertical = 4;
+  var detectionResult = null;
+  var maxAverageWindowSize = 50;
+  var speedResults = [];
+  var averageSpeed = 0;
 
   // |streaming| indicates whether or not we're currently streaming
   // video from the camera. Obviously, we start at false.
@@ -95,7 +98,7 @@
                 $('#startbutton').removeClass('hidden');
             },
                 failure: function (response) {
-                alert("failure")
+                alert("failure");
             }
         });
 
@@ -162,7 +165,7 @@
   }
 
   // Capture a photo by fetching the current contents of the video
-  // and drawing it into a canvas, then converting that to a PNG
+  // and drawing it into a canvas, then converting that to a JPG
   // format data URL. By drawing it on an offscreen canvas and then
   // drawing that to the screen, we can change its size and/or apply
   // other changes before drawing it.
@@ -190,13 +193,17 @@
   }
 
   function validate(response){
-    console.log(`Execution time: ${Date.now() - startTime} ms`);
+    var speed = Date.now() - startTime;
+    addNewSpeedResult(speed);
+    averageSpeed = countAverageSpeed(speedResults);
+    console.log(`Average speed: ${averageSpeed} ms`);
+    detectionResult = $.parseJSON(response);
     setTimeout(takepicture, 0);
     if($('#result').hasClass('hidden')){
        $('#result').removeClass('hidden');
     }
     //response = $.parseJSON(response)
-    detectionResult = $.parseJSON(response);
+
     /*if(response.length > 0){
         drawDetectionResult(response);
     }
@@ -204,15 +211,12 @@
     $('#result').attr('src', canvas.toDataURL('image/jpeg'));*/
   }
 
-
   function takepicture() {
     var context = canvas.getContext('2d');
     var secondContext = secondCanvas.getContext('2d');
     if (width && height) {
       canvas.width = width;
       canvas.height = height;
-      console.log(width - widthDifference);
-      console.log(scaledHeight);
       secondCanvas.width = width - widthDifference;
       secondCanvas.height = scaledHeight;
 
@@ -268,6 +272,17 @@
 
   function scalePositionToOriginalHeight(position){
     return (Number(position) / scaledHeight) * height;
+  }
+
+  function countAverageSpeed(){
+    return speedResults.reduce((partialSum, speed) => partialSum + speed, 0) / speedResults.length;
+  }
+
+  function addNewSpeedResult(speedResult){
+    if(speedResults.length > maxAverageWindowSize){
+        speedResults.shift();
+    }
+    speedResults.push(speedResult);
   }
 
   // Set up our event listener to run the startup process
