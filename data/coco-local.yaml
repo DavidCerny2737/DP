@@ -1,0 +1,10 @@
+# train and val datasets (image directory or *.txt file with image paths)
+train: fmld/train-local.txt
+val: fmld/valid-local.txt
+test: fmld/test-local.txt
+
+# number of classes
+nc: 3
+
+# class names
+names: ['masked_face', 'unmasked_face', 'incorrectly_masked_face']

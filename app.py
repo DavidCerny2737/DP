@@ -1,6 +1,5 @@
 from flask import Flask
 from flask import render_template, redirect, url_for, request, jsonify, send_from_directory
-from flask_socketio import SocketIO
 import detect
 from utils.recognition import initialize_recognition, get_representants_table, LOG_IMAGES_DIR
 from utils.general import *
@@ -26,7 +25,7 @@ IMG_SIZE_KEY = 'imgSize'
 
 # for GPU run use device: '0'
 # for optimized onnx run on GPU use onnx: True, but first export model using export_onnx.py with proper IMAGE_SIZE constant
-CONFIG = {'weights': ['best.pt'], 'img-size': 640, 'conf-thres': 0.4, 'iou-thres': 0.6, 'device': 'cpu', 'view-img': True,
+CONFIG = {'weights': ['old_weights/best.pt'], 'img-size': 640, 'conf-thres': 0.4, 'iou-thres': 0.6, 'device': 'cpu', 'view-img': True,
             'save-txt': False, 'agnostic-nms': True, 'augment': False, 'update': False, 'cfg': 'models/yolov4-csp.cfg',
             'names': 'data/coco.names', 'save-img': False, 'classes': None, 'onnx': False}
 
@@ -71,14 +70,13 @@ def download_file(filename):
 
 @socketio.on('frame')
 def hangle_socket_message(data):
-    #t0 = time.time()
     result = model.forward(data['blob'])
-    #print('total server latency: (%.3fs)' % (time.time() - t0))
-    socketio.emit('update-picture', result)
+    result = [res.to_json() for res in result]
+    socketio.emit('update-picture', json.dumps(result))
 
 
 def default_props(active=NAV_STREAM):
-    return {'active': active, IMG_SIZE_KEY: IMG_SIZE}
+    return {'active': active}
 
 
 def collect_env_info():
