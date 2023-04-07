@@ -138,9 +138,6 @@ class Model:
                         f.write(('%g ' * 5 + '\n') % (cls, *xywh))  # label format
 
                 if int(cls) == 1 or int(cls) == 2:
-                    print('Unmask detected!')
-
-                    print(c1, c2)
                     face = im0[c1[1]:c2[1], c1[0]:c2[0]]
                     # check_face(face, im0)
 
@@ -150,9 +147,7 @@ class Model:
                     cv2.imwrite(os.path.join('inference_app', str(self.i) + '.jpeg'), im0)
                     self.i = self.i + 1
 
-            # Print time (inference + NMS)
-        print('Image shape')
-        print(img.shape)
+            # Print time (inference + NMS
         print('%sDone inference. (%.3fs)' % (s, t2 - t1))
         print('Done full. (%.3fs)' % (time.time() - t0))
         # _, image = cv2.imencode('.png', im0)

@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import render_template, redirect, url_for, request, jsonify, send_from_directory
 import detect
+from flask_socketio import SocketIO
 from utils.recognition import initialize_recognition, get_representants_table, LOG_IMAGES_DIR
 from utils.general import *
 import PIL
@@ -19,13 +20,13 @@ model = None
 
 NAV_LOG = 'LOG'
 NAV_STREAM = 'STREAM'
-IMG_SIZE = (416, 416)
+IMG_SIZE = (384, 512)
 IMG_SIZE_KEY = 'imgSize'
 
 
 # for GPU run use device: '0'
 # for optimized onnx run on GPU use onnx: True, but first export model using export_onnx.py with proper IMAGE_SIZE constant
-CONFIG = {'weights': ['old_weights/best.pt'], 'img-size': 640, 'conf-thres': 0.4, 'iou-thres': 0.6, 'device': 'cpu', 'view-img': True,
+CONFIG = {'weights': ['old_weights/best.pt'], 'img-size': 512, 'conf-thres': 0.4, 'iou-thres': 0.6, 'device': '0', 'view-img': True,
             'save-txt': False, 'agnostic-nms': True, 'augment': False, 'update': False, 'cfg': 'models/yolov4-csp.cfg',
             'names': 'data/coco.names', 'save-img': False, 'classes': None, 'onnx': False}
 

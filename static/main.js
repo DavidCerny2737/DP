@@ -225,9 +225,9 @@
 
       context.drawImage(video, 0, 0, width, height);
       drawDetectionResult(detectionResult);
-      secondContext.drawImage(secondCanvas, 0, 0, width - widthDifference, scaledHeight);
+      secondContext.drawImage(canvas, 0, 0, width - widthDifference, scaledHeight);
 
-      canvas.toBlob((blob) => {
+      secondCanvas.toBlob((blob) => {
         startTime = Date.now();
         io.emit('frame', {blob});
       });
