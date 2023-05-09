@@ -26,7 +26,7 @@ git clone https://github.com/DavidCerny2737/DP.git
 cd DP
 
 # virtual environment and dependency install
-pythom -m venv venv
+python -m venv venv
 venv\Scripts\activate
 pip install -r requirments.txt
 ```
