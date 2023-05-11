@@ -17,6 +17,10 @@ Zde je popsán detailní postup instalace aplikace.
 * **Cmake**
   * https://cmake.org/download/
 * **Funkční webkamera**
+* **Nainstalovaná patřičná verze CUDA Toolkit pro výpočty GPU (v práci využitá verze 11.3)
+  * https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_network
+* **Nainstalovaná verze cudnn pro patřičnou verzi CUDA Toolkit
+  * https://developer.nvidia.com/rdp/cudnn-download
 
 ### Postup
 
@@ -31,7 +35,11 @@ venv\Scripts\activate
 pip install -r requirments.txt
 ```
 Dále je potřeba nainstalovat pytorch. Aplikace byla vyvýjena a testována s verzí torch 1.11.0 za použití cuda 11.3 a cpu
-verze pytorch 1.13.1. Nainstalujte si vlastní verzi pytorch podle nabídky instalací na:
+verze pytorch 1.11.0. Tato verze lze nainstalovat pomocí příkazu:
+```
+pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0 --extra-index-url https://download.pytorch.org/whl/cu113
+```
+Ovšem program by měl fungovat i pod novější verzí. Příkazy na doinstalování lze navolit podle nabídky na:
 https://pytorch.org/get-started/locally/ nebo použijte starší verzi pokud je to nutné.
 
 Z https://1drv.ms/u/s!Apjyzhd1jsIxiKcFOwfVWhLR_hCJEA je třeba stáhnout soubor best.pt a vložit ho projektového adresáře.
@@ -94,12 +102,29 @@ Aplikace je následně dostupná na: http://127.0.0.1:5000/. Je potřeba v prohl
 Následně je přenos z webkamery inicializován a na server jsou přeneseny informace o velikosti snímaných obrázků a je 
 potřeba chvíli vyčkat než se model inicializuje. Poté kliknutím na tlačítko Start stream je zahájen přenos.
 
-## Log
+### Možné problémy
+V případě chyby "ImportError: DLL load failed while importing _dlib_pybind11: The specified module could not be found" při spuštění aplikace 
+je potřeba přeinstalovat dlib modul pomocí:
+```
+pip uninstall dlib
+pip install dlib
+```
+Pokud tento proces nezabírá je možné ještě vyzkoušet nastavení cesty CUDA_PATH do __init__.py skriptu balíčku dlib jak je popsáno zde:
+https://github.com/davisking/dlib/issues/2097. Pokud ani toto nezabere pak je pravděpodobné ž Váš procesor nepodporuje operace nutné pro kooperaci dlib a CUDA.
 
+## Log
 V menu aplikace po kliknutí na Log je možno pozorovat individuální osoby co byly ve streamu nalezeny bez masky. 
 Tyto by měli obsahovat co nejméně duplicitních lidí, neboť jednotlivé obličeje jsou vůči sobě porobvnávány 
 rozpoznáváním obličejů.
 
+## Spuštění testovací procedury
+Pro spuštění testovací procedury slouží příkaz:
+```
+python test.py --img-size 320 --device 0
+```
+Parametr img-size určuje scale velikost testovacích dat, síť scaluje data do čtvercových rozměrů a tedy stačí definovat pouze jednu velikost. 
+Ne všechny velikosti vstupu jsou pro konfiguraci sítě validní, mezi možné hodnoty patří: 768, 704, 640, 576, 512, 448, 384, 320 a 256.
+Parametr --device určuje zařízení použité pro výpočty sítě. Pro využití GPU a CUDA zadejte hodnotu '0' a pro CPU hodnotu 'cpu'.
 # Ostatní větve
 
 ## feature/socketio
